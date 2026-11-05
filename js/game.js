@@ -200,16 +200,31 @@
     e.preventDefault();
     const c = G && G.creature;
     const live = c && c.state === 'live';
-    // 1) le doigt touche l'objet (où qu'il soit) : tentative de capture
-    if (live && G.phase === 'run' && Math.hypot(p.x - c.x, p.y - c.y) <= hitRadius()) {
+    const running = G && G.phase === 'run';
+    // double toucher : deux touchers rapprochés (temps + distance), n'importe où à l'écran
+    const now = performance.now();
+    const dbl = now - lastTap.t <= DOUBLE_TAP_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) <= DOUBLE_TAP_PX;
+    lastTap = dbl ? { t: -1e9, x: 0, y: 0 } : { t: now, x: e.clientX, y: e.clientY }; // un 3e toucher repart de zéro
+    const left = p.x < VW * 0.5;
+    // la moitié gauche continue de piloter, même pendant un double toucher
+    if (left) { input.steerId = e.pointerId; input.mode = 'pointer'; input.ty = p.y; }
+
+    // 1) le doigt touche l'objet (où qu'il soit) : tentative de capture immédiate
+    if (live && running && Math.hypot(p.x - c.x, p.y - c.y) <= hitRadius()) {
       tapMark(p);
       onAction();
       return;
     }
-    // 2) moitié gauche : pilotage
-    if (p.x < VW * 0.5) { input.steerId = e.pointerId; input.mode = 'pointer'; input.ty = p.y; return; }
-    // 3) moitié droite hors de l'objet : si un objet est visible, c'est une erreur de visée (pas de pénalité) ;
-    //    s'il n'y a rien à l'écran, c'est une réponse impulsive
+    // 2) double toucher n'importe où (par ex. à côté de l'avatar) : capture, comme la touche Espace
+    if (dbl && running) {
+      sonarFromAvatar();
+      // sans objet à l'écran : une seule réponse impulsive (à droite, le 1er toucher l'a déjà comptée)
+      if (live || left) onAction();
+      return;
+    }
+    if (left) return;
+    // 3) toucher simple à droite hors de l'objet : si un objet est visible, c'est une erreur de visée
+    //    (pas de pénalité, le double toucher reste possible) ; s'il n'y a rien, c'est une réponse impulsive
     tapMark(p);
     if (!live) onAction();
   });
@@ -230,6 +245,11 @@
   const pop = (x, y, text, color) => G.fx.push({ k: 'pop', x, y, text, color, dur: 0.9, t0: G.t });
   const toast = text => G.toasts.push({ text, t0: G.t });
   const tapMark = p => { if (G && G.phase === 'run') ring(p.x, p.y, 'hsla(200,100%,92%,', 22, 0.3); };
+  // onde partant de l'avatar : retour visuel du double toucher
+  const sonarFromAvatar = () => { if (G) ring(SUBX() + 30, sub.y, 'hsla(172,100%,75%,', 120, 0.45); };
+  const DOUBLE_TAP_MS = 320;   // délai max entre les deux touchers
+  const DOUBLE_TAP_PX = 70;    // distance max entre les deux touchers (pixels écran)
+  let lastTap = { t: -1e9, x: 0, y: 0 };
 
   // ---------- Logique ----------
   function onAction() {
@@ -490,7 +510,7 @@
     ctx.fillRect(0, 0, VW, VH);
     txt(eyebrow, VW / 2, VH / 2 - 92, 15, 'rgba(160,250,235,0.9)', 'center', 600, 4);
     drawRuleCard(VW / 2, VH / 2 - 30, 1.5, t);
-    txt(input.touch ? 'Touche-la quand elle apparaît · laisse passer le reste' : 'Laisse passer tout le reste',
+    txt(input.touch ? 'Touche-la, ou tape deux fois n’importe où · laisse passer le reste' : 'Laisse passer tout le reste',
       VW / 2, VH / 2 + 42, 17, 'rgba(220,240,255,0.8)', 'center', 500);
     if (big) txt(big, VW / 2, VH / 2 + 135, 68, '#ffffff', 'center', 700);
   }
@@ -543,8 +563,9 @@
       ctx.strokeStyle = 'rgba(225,240,255,0.35)'; ctx.lineWidth = 2; ctx.setLineDash([8, 10]);
       ctx.beginPath(); ctx.moveTo(VW * 0.5, 140); ctx.lineTo(VW * 0.5, VH - 80); ctx.stroke();
       ctx.setLineDash([]);
-      hudText('↕ GLISSE ICI POUR PILOTER', VW * 0.25, VH - 96, 14, 'rgba(235,248,255,0.95)', 'center', 700, 2);
-      hudText('TOUCHE LA CIBLE POUR LA CAPTURER', VW * 0.75, VH - 96, 14, 'rgba(235,248,255,0.95)', 'center', 700, 2);
+      hudText('↕ GLISSE ICI POUR PILOTER', VW * 0.25, VH - 104, 14, 'rgba(235,248,255,0.95)', 'center', 700, 2);
+      hudText('TOUCHE LA CIBLE POUR LA CAPTURER', VW * 0.75, VH - 104, 14, 'rgba(235,248,255,0.95)', 'center', 700, 2);
+      hudText('ou tape deux fois n’importe où', VW * 0.5, VH - 78, 13, 'rgba(235,248,255,0.85)', 'center', 600, 1);
       ctx.restore();
     }
   }
@@ -702,6 +723,7 @@
       const k = scale / dpr;
       return {
         phase: G.phase, run: G.run, touch: input.touch,
+        avatar: { x: SUBX() * k, y: sub.y * k },
         creature: c && c.state === 'live'
           ? { x: c.x * k, y: c.y * k, isTarget: c.isTarget, hitPx: hitRadius() * k, win: c.win } : null,
         stats: { ...G.stats, rts: G.stats.rts.length },

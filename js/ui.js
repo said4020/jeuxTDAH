@@ -158,7 +158,7 @@
     [
       ['Pilote', ' : flèches ↑ ↓ ou Z / S, ou la souris. Sur téléphone et tablette, glisse le doigt sur la moitié gauche.'],
       ['Passe dans ', `${t.gates} pour suivre le courant.`],
-      ['Capture', ' : Espace ou clic sur ordinateur. Sur téléphone et tablette, touche directement l\'objet. Seulement la cible affichée en haut !'],
+      ['Capture', ' : Espace ou clic sur ordinateur. Sur téléphone et tablette, touche directement l’objet, ou tape deux fois n’importe où (même à côté de ton avatar). Seulement la cible affichée en haut !'],
       ['Leurres', ' : tout le reste. Laisse-les passer.'],
       ['Pause', ' : bouton ⏸ en haut à droite, ou touche Échap. La pause ne compte pas dans ton temps de jeu.'],
       ['Limite', ` : ${fmtDuration(A.dailyLimit())} de jeu aujourd'hui (réglée par un parent).`],

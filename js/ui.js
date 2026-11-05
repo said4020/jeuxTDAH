@@ -6,7 +6,7 @@
   const fmt = A.fmt;
   const P = () => A.profile;
 
-  const SCREENS = ['hub', 'onboard', 'pause', 'results', 'parent'];
+  const SCREENS = ['hub', 'onboard', 'pause', 'results', 'parent', 'share'];
   const show = id => SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== id));
   let currentTab = 'home';
 
@@ -546,6 +546,36 @@
   });
   $('streak-path').setAttribute('d', A.ICONS.streak);
   A.ui = { show, goHub, fmtDuration };
+
+  // ---------- Partager (QR code) ----------
+  $('share-url').textContent = A.PUBLIC_URL;
+  $('share-url').href = A.PUBLIC_URL;
+  const shareCopy = $('share-copy');
+  const canNativeShare = typeof navigator.share === 'function';
+  $('share-native').classList.toggle('hidden', !canNativeShare);
+  $('btn-share').addEventListener('click', () => {
+    shareCopy.textContent = 'Copier le lien';
+    show('share');
+  });
+  $('share-close').addEventListener('click', () => goHub());
+  shareCopy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(A.PUBLIC_URL);
+      shareCopy.textContent = 'Lien copié ✓';
+    } catch (e) {
+      // presse-papiers indisponible (page locale, ancien navigateur) : on sélectionne le lien
+      const r = document.createRange();
+      r.selectNodeContents($('share-url'));
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      shareCopy.textContent = 'Lien sélectionné : fais Ctrl+C';
+    }
+  });
+  $('share-native').addEventListener('click', () => {
+    navigator.share({ title: 'Abysse', text: 'Un jeu pour entraîner son attention', url: A.PUBLIC_URL }).catch(() => {});
+  });
+  addEventListener('keydown', e => {
+    if (e.code === 'Escape' && !$('share').classList.contains('hidden')) goHub();
+  });
 
   // le temps restant affiché reste à jour (passage de minuit, autre onglet…)
   setInterval(() => {

@@ -490,3 +490,35 @@ input[type="range"] { width: 100%; accent-color: var(--accent); padding: 0; back
 .week-row .wt i.full { background: var(--warm); }
 .week-row .wv { text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 520px) { .week-row { grid-template-columns: 80px 1fr 96px; } }
+
+/* ---------- Partager (QR code) ---------- */
+.share-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; padding: 9px 14px;
+  border-radius: 12px; font-size: 13px;
+}
+.share-btn svg { width: 18px; height: 18px; fill: var(--text); }
+.panel.share { text-align: center; align-items: center; }
+.panel.share .primary, .panel.share .ghost { width: 100%; }
+.share-qr { background: #fff; border-radius: 16px; padding: 12px; margin: 4px 0; }
+.share-qr img { display: block; width: min(260px, 60vw); height: auto; image-rendering: pixelated; }
+.share-url { color: var(--accent); font-weight: 600; word-break: break-all; -webkit-user-select: text; user-select: text; }
+@media (max-width: 900px) { .share-btn { margin-bottom: 0; } }
+@media (max-width: 600px) { .share-btn span { display: none; } }
+/* écran peu haut (téléphone à l'horizontale) : QR à gauche, texte et boutons à droite */
+@media (max-height: 600px) {
+  .panel.share {
+    width: min(680px, 100%);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 22px; row-gap: 8px;
+    align-items: start;
+    text-align: left;
+    padding: 18px 22px;
+  }
+  .panel.share > * { grid-column: 2; }
+  .panel.share .share-qr { grid-column: 1; grid-row: 1 / span 8; align-self: center; margin: 0; }
+  .share-qr img { width: min(240px, calc(100vh - 90px)); }
+  .panel.share h2 { font-size: 22px; }
+  .panel.share .primary, .panel.share .ghost { padding: 9px 16px; font-size: 14px; margin-top: 2px; }
+}

@@ -27,6 +27,10 @@
           <button role="tab" data-tab="hangar">Hangar<span class="dot hidden" id="hangar-dot"></span></button>
           <button role="tab" data-tab="badges">Badges</button>
         </nav>
+        <button class="share-btn" id="btn-share" title="Afficher le QR code pour jouer sur un autre appareil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2zM16 16h2v2h-2z"/></svg>
+          <span>Partager</span>
+        </button>
         <button class="pilot" id="pilot-chip" title="Changer de nom de pilote">
           <span class="pilot-top"><span class="pilot-name" id="p-name">Pilote</span><span class="pilot-rank" id="p-rank">Recrue</span></span>
           <span class="xpbar"><i id="p-xpfill"></i></span>
@@ -197,6 +201,21 @@
         <button id="btn-to-hangar" class="ghost hidden">Voir le hangar</button>
         <button id="btn-menu" class="ghost">Menu</button>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ PARTAGER (QR CODE) ============ -->
+  <section id="share" class="screen hidden">
+    <div class="panel narrow share">
+      <p class="eyebrow">Partager le jeu</p>
+      <h2>Scanne pour jouer</h2>
+      <p class="muted">Avec l'appareil photo d'un téléphone ou d'une tablette, puis tiens-le à l'horizontale.</p>
+      <div class="share-qr"><img src="qr.png" alt="QR code vers le jeu" width="260" height="260"></div>
+      <a class="share-url" id="share-url" href="#" target="_blank" rel="noopener"></a>
+      <button class="primary" id="share-copy" type="button">Copier le lien</button>
+      <button class="ghost hidden" id="share-native" type="button">Partager…</button>
+      <button class="ghost" id="share-close" type="button">Fermer</button>
+      <p class="muted small-txt">Chaque appareil garde sa propre progression. Pense à créer le code parent sur chacun.</p>
     </div>
   </section>
 

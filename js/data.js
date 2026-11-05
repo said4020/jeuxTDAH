@@ -6,6 +6,8 @@ window.Abysse = window.Abysse || {};
 
   // Limite de temps de jeu quotidienne par défaut (secondes) — réglable dans l'Espace parent
   A.DAILY_LIMIT = 30 * 60;
+  // Adresse publique du jeu (GitHub Pages) : utilisée par le bouton « Partager » et le QR code (qr.png)
+  A.PUBLIC_URL = 'https://said4020.github.io/jeuxTDAH/';
   A.LIMIT_RANGE = { min: 10, max: 90, step: 5 }; // minutes
   A.MIN_DIVE = 20; // en dessous, on ne lance plus de partie
 

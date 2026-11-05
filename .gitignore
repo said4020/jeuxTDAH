@@ -1,0 +1,6 @@
+# Généré par outils/tester-sur-mobile.py (contient l'adresse IP locale du PC)
+outils/qr-mobile.html
+
+# Python
+__pycache__/
+*.pyc

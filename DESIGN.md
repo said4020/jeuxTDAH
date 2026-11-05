@@ -67,6 +67,8 @@ La sauvegarde du téléphone est indépendante de celle du PC : il faudra recré
 
 ## En ligne
 Site : https://said4020.github.io/jeuxTDAH/ (GitHub Pages, branche `main`, racine). Il se met à jour 1 à 2 min après chaque push.
+**Avant chaque envoi sur GitHub : `python outils/version.py`.** Cette commande met un numéro de version sur les fichiers CSS/JS de index.html. Sans lui, un navigateur peut garder d'anciens scripts en cache pendant 10 min (par exemple un bouton qui ne réagit plus).
+Bouton « Partager » dans le hub : QR code (cliquable pour l'agrandir en plein écran), copie du lien, partage natif sur mobile.
 Page de partage avec QR code : `qr.html` et image `qr.png`, régénérés par `python outils/qr-site.py [adresse]`.
 
 ## Pistes pour la suite

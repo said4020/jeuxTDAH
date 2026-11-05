@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Abysse</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2340f0d6'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23bffcf2'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=202611051210">
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -210,7 +211,8 @@
       <p class="eyebrow">Partager le jeu</p>
       <h2>Scanne pour jouer</h2>
       <p class="muted">Avec l'appareil photo d'un téléphone ou d'une tablette, puis tiens-le à l'horizontale.</p>
-      <div class="share-qr"><img src="qr.png" alt="QR code vers le jeu" width="260" height="260"></div>
+      <button class="share-qr" id="share-qr" type="button" title="Agrandir le QR code" aria-label="Agrandir le QR code"><img src="qr.png" alt="QR code vers le jeu" width="260" height="260"></button>
+      <p class="muted small-txt share-hint">Touche le QR code pour l'agrandir.</p>
       <a class="share-url" id="share-url" href="#" target="_blank" rel="noopener"></a>
       <button class="primary" id="share-copy" type="button">Copier le lien</button>
       <button class="ghost hidden" id="share-native" type="button">Partager…</button>
@@ -218,6 +220,12 @@
       <p class="muted small-txt">Chaque appareil garde sa propre progression. Pense à créer le code parent sur chacun.</p>
     </div>
   </section>
+
+  <!-- QR code en plein écran -->
+  <button id="qr-zoom" class="qr-zoom hidden" type="button" aria-label="Fermer le QR code agrandi">
+    <img src="qr.png" alt="QR code vers le jeu">
+    <span>Scanne avec l'appareil photo · touche pour fermer</span>
+  </button>
 
   <!-- ============ ESPACE PARENT ============ -->
   <section id="parent" class="screen hidden">
@@ -277,16 +285,16 @@
 
   <div id="rotate">Tourne ton appareil à l'horizontale ↻</div>
 
-  <script src="js/data.js"></script>
-  <script src="js/themes.js"></script>
-  <script src="js/profile.js"></script>
-  <script src="js/art/common.js"></script>
-  <script src="js/art/ocean.js"></script>
-  <script src="js/art/space.js"></script>
-  <script src="js/art/nature.js"></script>
-  <script src="js/charts.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/parent.js"></script>
+  <script src="js/data.js?v=202611051210"></script>
+  <script src="js/themes.js?v=202611051210"></script>
+  <script src="js/profile.js?v=202611051210"></script>
+  <script src="js/art/common.js?v=202611051210"></script>
+  <script src="js/art/ocean.js?v=202611051210"></script>
+  <script src="js/art/space.js?v=202611051210"></script>
+  <script src="js/art/nature.js?v=202611051210"></script>
+  <script src="js/charts.js?v=202611051210"></script>
+  <script src="js/game.js?v=202611051210"></script>
+  <script src="js/ui.js?v=202611051210"></script>
+  <script src="js/parent.js?v=202611051210"></script>
 </body>
 </html>

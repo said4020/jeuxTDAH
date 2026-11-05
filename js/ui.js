@@ -558,6 +558,9 @@
     show('share');
   });
   $('share-close').addEventListener('click', () => goHub());
+  // QR code agrandi en plein écran (plus facile à scanner depuis un autre appareil)
+  $('share-qr').addEventListener('click', () => $('qr-zoom').classList.remove('hidden'));
+  $('qr-zoom').addEventListener('click', () => $('qr-zoom').classList.add('hidden'));
   shareCopy.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(A.PUBLIC_URL);
@@ -574,7 +577,9 @@
     navigator.share({ title: 'Abysse', text: 'Un jeu pour entraîner son attention', url: A.PUBLIC_URL }).catch(() => {});
   });
   addEventListener('keydown', e => {
-    if (e.code === 'Escape' && !$('share').classList.contains('hidden')) goHub();
+    if (e.code !== 'Escape') return;
+    if (!$('qr-zoom').classList.contains('hidden')) $('qr-zoom').classList.add('hidden');
+    else if (!$('share').classList.contains('hidden')) goHub();
   });
 
   // le temps restant affiché reste à jour (passage de minuit, autre onglet…)

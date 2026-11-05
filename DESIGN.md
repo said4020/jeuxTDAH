@@ -59,6 +59,12 @@ Mode dev : `index.html#theme=space&sim=180&n=5&tab=progress` (bot ; ajouter `&li
 `&pause` pour s'arrêter sur l'écran pause, `#onboard` pour revoir l'écran d'accueil).
 ⚠️ Ce mode écrit dans la vraie sauvegarde : à utiliser dans un profil de navigateur de test.
 
+## Tester sur smartphone
+`python outils/tester-sur-mobile.py`. Cette commande lance un serveur web sur le PC (port 8080) et ouvre une page avec un QR code à scanner.
+Le téléphone doit être sur le même réseau que le PC. Au premier lancement, autoriser Python dans le pare-feu Windows (réseaux privés).
+Prérequis : `python -m pip install --user qrcode`. Ctrl+C pour arrêter.
+La sauvegarde du téléphone est indépendante de celle du PC : il faudra recréer le code parent sur le téléphone.
+
 ## Pistes pour la suite
 - [ ] Mode daltonien (motifs en plus des couleurs)
 - [ ] Événements « distraction » à ignorer

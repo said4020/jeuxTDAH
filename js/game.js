@@ -45,6 +45,14 @@
   resize();
   const SUBX = () => Math.min(300, VW * 0.22);
 
+  // ---------- Écran tactile ----------
+  // Sur tactile, on touche directement l'objet : objets plus grands, zone de tolérance pour le doigt,
+  // et un peu plus de temps pour répondre (il faut déplacer le doigt jusqu'à l'objet).
+  const TOUCH_DEVICE = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window;
+  const creatureScale = () => (input.touch ? (innerHeight < 600 ? 1.7 : 1.5) : 1.15);
+  const hitRadius = () => 42 * creatureScale() + 30;
+  const TOUCH_WINDOW_BONUS = 0.3;
+
   // ---------- Audio ----------
   let actx = null;
   function tone(freq, dur, { type = 'sine', vol = 0.12, slide = 1, delay = 0 } = {}) {
@@ -134,6 +142,7 @@
   let dist = 0;
   const sub = { y: VH / 2, vy: 0, tilt: 0 };
   const input = { mode: 'keys', ty: null, steerId: null, touch: false };
+  input.touch = TOUCH_DEVICE;
   const keys = {};
   const trail = new A.Trail();
 
@@ -189,8 +198,20 @@
     }
     input.touch = true;
     e.preventDefault();
-    if (p.x < VW * 0.5) { input.steerId = e.pointerId; input.mode = 'pointer'; input.ty = p.y; }
-    else onAction();
+    const c = G && G.creature;
+    const live = c && c.state === 'live';
+    // 1) le doigt touche l'objet (où qu'il soit) : tentative de capture
+    if (live && G.phase === 'run' && Math.hypot(p.x - c.x, p.y - c.y) <= hitRadius()) {
+      tapMark(p);
+      onAction();
+      return;
+    }
+    // 2) moitié gauche : pilotage
+    if (p.x < VW * 0.5) { input.steerId = e.pointerId; input.mode = 'pointer'; input.ty = p.y; return; }
+    // 3) moitié droite hors de l'objet : si un objet est visible, c'est une erreur de visée (pas de pénalité) ;
+    //    s'il n'y a rien à l'écran, c'est une réponse impulsive
+    tapMark(p);
+    if (!live) onAction();
   });
   canvas.addEventListener('pointermove', e => {
     if (state !== 'play') return;
@@ -208,6 +229,7 @@
   const ring = (x, y, color, max = 60, dur = 0.5) => G.fx.push({ k: 'ring', x, y, color, max, dur, t0: G.t });
   const pop = (x, y, text, color) => G.fx.push({ k: 'pop', x, y, text, color, dur: 0.9, t0: G.t });
   const toast = text => G.toasts.push({ text, t0: G.t });
+  const tapMark = p => { if (G && G.phase === 'run') ring(p.x, p.y, 'hsla(200,100%,92%,', 22, 0.3); };
 
   // ---------- Logique ----------
   function onAction() {
@@ -295,8 +317,9 @@
     const st = isTarget ? { species: G.rule.species, hue: G.rule.hue + rand(-6, 6) } : makeDistractor(L);
     G.creature = {
       ...st, isTarget,
-      x: rand(VW * 0.5, VW * 0.86), y: rand(110, VH - 100),
-      born: G.t, win: discWindow(L), state: 'live', end: 0, phase: Math.random() * 10,
+      x: rand(VW * 0.5, Math.min(VW * 0.86, VW - 120)), y: rand(120, VH - 110),
+      born: G.t, win: discWindow(L) + (input.touch ? TOUCH_WINDOW_BONUS : 0),
+      state: 'live', end: 0, phase: Math.random() * 10,
     };
   }
 
@@ -424,7 +447,7 @@
   }
 
   function drawCreatureObj(c, t) {
-    let a = clamp((G.t - c.born) / 0.18, 0, 1), s = 1.15, x = c.x, y = c.y;
+    let a = clamp((G.t - c.born) / 0.18, 0, 1), s = creatureScale(), x = c.x, y = c.y;
     if (c.state !== 'live') {
       const k = clamp((G.t - c.end) / 0.4, 0, 1);
       a *= 1 - k;
@@ -434,7 +457,7 @@
       const rem = clamp(1 - (G.t - c.born) / c.win, 0, 1);
       ctx.save();
       ctx.strokeStyle = 'rgba(230,245,255,0.35)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(x, y, 50, -Math.PI / 2, -Math.PI / 2 + rem * Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, 44 * s, -Math.PI / 2, -Math.PI / 2 + rem * Math.PI * 2); ctx.stroke();
       ctx.restore();
     }
     G.art.creature(ctx, c.species, c.hue, x, y, s, a, t + c.phase);
@@ -467,7 +490,8 @@
     ctx.fillRect(0, 0, VW, VH);
     txt(eyebrow, VW / 2, VH / 2 - 92, 15, 'rgba(160,250,235,0.9)', 'center', 600, 4);
     drawRuleCard(VW / 2, VH / 2 - 30, 1.5, t);
-    txt('Laisse passer tout le reste', VW / 2, VH / 2 + 42, 17, 'rgba(220,240,255,0.8)', 'center', 500);
+    txt(input.touch ? 'Touche-la quand elle apparaît · laisse passer le reste' : 'Laisse passer tout le reste',
+      VW / 2, VH / 2 + 42, 17, 'rgba(220,240,255,0.8)', 'center', 500);
     if (big) txt(big, VW / 2, VH / 2 + 135, 68, '#ffffff', 'center', 700);
   }
 
@@ -481,7 +505,8 @@
     hudText(A.zoneOf(depth).name.toUpperCase(), 30, 76, 12, 'rgba(225,240,255,0.85)', 'left', 600, 2);
 
     // à droite : score, série, temps restant (le bouton pause HTML occupe le coin)
-    const rx = VW - 96;
+    // à gauche du bouton pause HTML (16 px de marge + 52 px + 14 px d'écart), converti en unités du jeu
+    const rx = VW - Math.max(96, (82 * dpr) / scale);
     hudText(fmt(G.score), rx, 52, 30, '#f2fbff', 'right', 700);
     const m = mult();
     hudText(m > 1 ? `COMBO ×${m.toFixed(1).replace('.', ',')}` : `SÉRIE ${G.combo}`, rx, 76, 12,
@@ -510,12 +535,16 @@
       ctx.restore();
     });
 
-    if (input.touch) {
+    // aide tactile pendant les premières secondes : zone de pilotage + « touche la cible »
+    if (input.touch && G.phase === 'run' && G.run < 9) {
+      const a = clamp(Math.min(G.run / 0.5, (9 - G.run) / 1.5), 0, 1);
       ctx.save();
-      ctx.strokeStyle = 'rgba(160,240,230,0.45)'; ctx.lineWidth = 2;
-      ctx.fillStyle = 'rgba(4,16,30,0.35)';
-      ctx.beginPath(); ctx.arc(VW - 96, VH - 96, 56, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      txt('CAPTURE', VW - 96, VH - 90, 14, 'rgba(220,255,250,0.9)', 'center', 700, 2);
+      ctx.globalAlpha = a;
+      ctx.strokeStyle = 'rgba(225,240,255,0.35)'; ctx.lineWidth = 2; ctx.setLineDash([8, 10]);
+      ctx.beginPath(); ctx.moveTo(VW * 0.5, 140); ctx.lineTo(VW * 0.5, VH - 80); ctx.stroke();
+      ctx.setLineDash([]);
+      hudText('↕ GLISSE ICI POUR PILOTER', VW * 0.25, VH - 96, 14, 'rgba(235,248,255,0.95)', 'center', 700, 2);
+      hudText('TOUCHE LA CIBLE POUR LA CAPTURER', VW * 0.75, VH - 96, 14, 'rgba(235,248,255,0.95)', 'center', 700, 2);
       ctx.restore();
     }
   }
@@ -666,5 +695,17 @@
     start, togglePause, quit, simulate,
     isPlaying: () => state === 'play',
     isPaused: () => paused,
+    // lecture seule, pour les tests automatisés : objet affiché (position en pixels CSS) et compteurs
+    peek: () => {
+      if (!G) return null;
+      const c = G.creature;
+      const k = scale / dpr;
+      return {
+        phase: G.phase, run: G.run, touch: input.touch,
+        creature: c && c.state === 'live'
+          ? { x: c.x * k, y: c.y * k, isTarget: c.isTarget, hitPx: hitRadius() * k, win: c.win } : null,
+        stats: { ...G.stats, rts: G.stats.rts.length },
+      };
+    },
   };
 })();

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Abysse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Bouton pause (visible pendant la partie) -->
+  <button id="btn-pause" class="pause-btn hidden" aria-label="Mettre en pause" title="Pause (Échap)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
+  </button>
+
+  <!-- ============ HUB ============ -->
+  <section id="hub" class="screen">
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span id="brand-name">ABYSSE</span></div>
+        <nav class="tabs" role="tablist">
+          <button role="tab" data-tab="home" class="on">Jouer</button>
+          <button role="tab" data-tab="progress">Progression</button>
+          <button role="tab" data-tab="hangar">Hangar<span class="dot hidden" id="hangar-dot"></span></button>
+          <button role="tab" data-tab="badges">Badges</button>
+        </nav>
+        <button class="pilot" id="pilot-chip" title="Changer de nom de pilote">
+          <span class="pilot-top"><span class="pilot-name" id="p-name">Pilote</span><span class="pilot-rank" id="p-rank">Recrue</span></span>
+          <span class="xpbar"><i id="p-xpfill"></i></span>
+          <span class="pilot-xp" id="p-xp">0 / 600 XP</span>
+        </button>
+      </header>
+
+      <main class="tab-body">
+        <!-- Accueil -->
+        <div class="tab" id="tab-home">
+          <div class="home-grid">
+            <div class="card dive-card">
+              <p class="eyebrow" id="h-proglabel">Profondeur atteinte</p>
+              <div class="depth-big" id="h-depth">0 m</div>
+              <div class="zone-line"><span id="h-zone">Zone éclairée</span><span class="muted" id="h-next"></span></div>
+              <div class="bar"><i id="h-zonefill"></i></div>
+              <button id="btn-play" class="primary big">Plonger</button>
+              <p class="limit-msg hidden" id="h-limitmsg"></p>
+              <div class="options">
+                <div class="seg" id="seg-duration" role="radiogroup" aria-label="Durée de la partie">
+                  <button data-v="120">2 min</button>
+                  <button data-v="180">3 min</button>
+                  <button data-v="300">5 min</button>
+                </div>
+                <button id="btn-sound" class="ghost small">Son : oui</button>
+              </div>
+            </div>
+
+            <div class="side">
+              <div class="card">
+                <div class="card-head"><h3>Temps de jeu aujourd'hui</h3><span class="muted small-txt" id="h-timeleft">30 min restantes</span></div>
+                <div class="bar time"><i id="h-timefill"></i></div>
+                <p class="muted small-txt time-note" id="h-timenote"></p>
+              </div>
+              <div class="card">
+                <div class="card-head"><h3>Missions du jour</h3><span class="muted small-txt">+100 XP chacune</span></div>
+                <ul class="missions" id="h-missions"></ul>
+              </div>
+              <div class="card streak-card">
+                <div class="streak-icon"><svg viewBox="0 0 24 24"><path id="streak-path"/></svg></div>
+                <div>
+                  <div class="streak-n" id="h-streak">0 jour</div>
+                  <div class="muted small-txt" id="h-today">0 partie aujourd'hui</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Univers</h3><span class="muted small-txt">ta progression est conservée</span></div>
+            <div class="worlds" id="world-picker-home"></div>
+          </div>
+
+          <details class="howto card" id="howto">
+            <summary>Comment jouer</summary>
+            <ul id="howto-list"></ul>
+          </details>
+          <div class="footer-actions">
+            <button id="btn-parent" class="ghost small parent-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11h12v10H6zM8.5 11V7.5a3.5 3.5 0 0 1 7 0V11"/></svg>Espace parent</button>
+          </div>
+        </div>
+
+        <!-- Progression -->
+        <div class="tab hidden" id="tab-progress">
+          <div class="tiles" id="pr-tiles"></div>
+          <div class="empty-state hidden" id="pr-empty">Fais au moins 2 parties pour voir ta courbe de progression.</div>
+          <div id="pr-charts">
+            <div class="card">
+              <div class="card-head"><h3>Niveau en fin de partie</h3><span class="muted small-txt">la vraie mesure de ta progression</span></div>
+              <div id="chart-levels"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Précision par partie</h3><span class="muted small-txt">reste stable car le jeu s'adapte à ton niveau</span></div>
+              <div id="chart-acc"></div>
+            </div>
+          </div>
+          <details class="card table-card">
+            <summary>Voir le détail des parties</summary>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Univers</th><th>Durée</th><th>Pilotage</th><th>Détection</th><th>Contrôle</th><th>Réaction</th><th>Niveaux</th><th>Score</th><th>XP</th></tr></thead>
+                <tbody id="log-body"></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+
+        <!-- Hangar -->
+        <div class="tab hidden" id="tab-hangar">
+          <div class="card preview-card">
+            <canvas id="hangar-preview"></canvas>
+            <div class="preview-label">
+              <p class="eyebrow">Configuration actuelle</p>
+              <div id="hg-current"></div>
+            </div>
+          </div>
+          <div id="hangar-sections"></div>
+        </div>
+
+        <!-- Badges -->
+        <div class="tab hidden" id="tab-badges">
+          <div class="card-head"><h3 id="bd-count">0 / 18 badges</h3></div>
+          <div class="badge-grid" id="badge-grid"></div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============ BIENVENUE : NOM + UNIVERS ============ -->
+  <section id="onboard" class="screen hidden">
+    <form class="panel onboard" id="onboard-form">
+      <p class="eyebrow">Bienvenue à bord</p>
+      <h2>Ton nom de pilote</h2>
+      <input id="callsign" maxlength="16" autocomplete="off" placeholder="ex. Nox, Kraken, Lou…">
+      <h2 class="mt">Choisis ton univers</h2>
+      <p class="muted">Tu pourras en changer à tout moment, ta progression est conservée.</p>
+      <div class="worlds big" id="world-picker-onboard"></div>
+      <button class="primary" type="submit">C'est parti</button>
+    </form>
+  </section>
+
+  <!-- ============ PAUSE ============ -->
+  <section id="pause" class="screen hidden">
+    <div class="panel narrow">
+      <p class="eyebrow">Pause</p>
+      <h2>Partie en pause</h2>
+      <p class="muted" id="pause-info"></p>
+      <button id="btn-resume" class="primary">Reprendre</button>
+      <button id="btn-quit" class="ghost">Abandonner la partie</button>
+    </div>
+  </section>
+
+  <!-- ============ RÉSULTATS ============ -->
+  <section id="results" class="screen hidden">
+    <div class="panel results">
+      <div class="res-head">
+        <div>
+          <p class="eyebrow">Partie terminée</p>
+          <h2 id="r-title">+0 m</h2>
+          <p class="muted" id="r-zone"></p>
+        </div>
+        <div class="res-score"><span class="muted small-txt">Score</span><b id="r-score">0</b><span class="record hidden" id="r-record">Record</span></div>
+      </div>
+
+      <div class="grid4">
+        <div class="stat"><span class="k">Pilotage</span><span class="v" id="r-nav">—</span><span class="s">passages réussis</span></div>
+        <div class="stat"><span class="k">Détection</span><span class="v" id="r-det">—</span><span class="s">cibles captées</span></div>
+        <div class="stat"><span class="k">Contrôle</span><span class="v" id="r-ctl">—</span><span class="s">leurres ignorés</span></div>
+        <div class="stat"><span class="k">Réactivité</span><span class="v" id="r-rt">—</span><span class="s">temps de réaction</span></div>
+      </div>
+      <p class="levels muted" id="r-levels"></p>
+
+      <div class="xp-block">
+        <div class="xp-head"><b id="r-xp">+0 XP</b><span class="muted" id="r-rankline"></span></div>
+        <div class="bar xp"><i id="r-xpfill"></i></div>
+        <ul class="xp-list" id="r-xplist"></ul>
+      </div>
+
+      <div class="rewards hidden" id="r-rewards">
+        <p class="eyebrow">Nouveautés</p>
+        <div class="chips" id="r-chips"></div>
+      </div>
+
+      <p class="comment" id="r-comment"></p>
+      <p class="limit-msg hidden" id="r-limitmsg"></p>
+      <div class="actions">
+        <button id="btn-again" class="primary">Rejouer</button>
+        <button id="btn-to-hangar" class="ghost hidden">Voir le hangar</button>
+        <button id="btn-menu" class="ghost">Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ESPACE PARENT ============ -->
+  <section id="parent" class="screen hidden">
+    <div class="panel parent">
+      <div class="parent-head">
+        <div><p class="eyebrow">Espace parent</p><h2 id="pa-title">Accès protégé</h2></div>
+        <button class="ghost small" id="pa-close" type="button">Fermer</button>
+      </div>
+
+      <form id="pa-lock" class="pa-lock" autocomplete="off">
+        <p class="muted" id="pa-lock-text"></p>
+        <input id="pa-pin" type="password" inputmode="numeric" maxlength="4" placeholder="Code à 4 chiffres" aria-label="Code parent">
+        <input id="pa-pin2" class="hidden" type="password" inputmode="numeric" maxlength="4" placeholder="Confirme le code" aria-label="Confirmation du code">
+        <p class="pa-err" id="pa-err" role="alert"></p>
+        <button class="primary" type="submit">Valider</button>
+        <p class="muted small-txt" id="pa-forgot">Code oublié ? La seule solution est d'effacer les données de ce site dans le navigateur, ce qui efface aussi toute la progression.</p>
+      </form>
+
+      <div id="pa-panel" class="pa-panel hidden">
+        <div class="card">
+          <div class="card-head"><h3>Temps de jeu par jour</h3><b class="pa-val" id="pa-limit-val">30 min</b></div>
+          <input type="range" id="pa-limit" aria-label="Limite quotidienne en minutes">
+          <label class="check"><input type="checkbox" id="pa-we-on"> Limite différente le week-end (samedi et dimanche)</label>
+          <div id="pa-we-row" class="hidden">
+            <div class="card-head"><span class="muted">Week-end</span><b class="pa-val" id="pa-we-val"></b></div>
+            <input type="range" id="pa-we" aria-label="Limite du week-end en minutes">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Bonus pour aujourd'hui</h3><span class="muted small-txt" id="pa-bonus-state">aucun</span></div>
+          <div class="options">
+            <button type="button" class="ghost small" data-bonus="10">+10 min</button>
+            <button type="button" class="ghost small" data-bonus="15">+15 min</button>
+            <button type="button" class="ghost small" data-bonus="30">+30 min</button>
+            <button type="button" class="ghost small" id="pa-bonus-clear">Retirer le bonus</button>
+          </div>
+          <p class="muted small-txt pa-note">Valable seulement aujourd'hui. La limite habituelle revient demain.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Temps joué ces 7 derniers jours</h3><span class="muted small-txt" id="pa-week-total"></span></div>
+          <div class="week" id="pa-week"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Sécurité</h3></div>
+          <div class="options">
+            <button type="button" class="ghost small" id="pa-change">Changer le code</button>
+            <button type="button" class="ghost small danger" id="btn-reset">Effacer la progression</button>
+          </div>
+          <p class="muted small-txt pa-note">Effacer la progression remet à zéro l'XP, les badges et l'historique. Le temps déjà joué aujourd'hui et ces réglages sont conservés.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="rotate">Tourne ton appareil à l'horizontale ↻</div>
+
+  <script src="js/data.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/art/common.js"></script>
+  <script src="js/art/ocean.js"></script>
+  <script src="js/art/space.js"></script>
+  <script src="js/art/nature.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/parent.js"></script>
+</body>
+</html>

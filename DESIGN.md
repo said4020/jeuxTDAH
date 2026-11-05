@@ -65,6 +65,10 @@ Le téléphone doit être sur le même réseau que le PC. Au premier lancement, 
 Prérequis : `python -m pip install --user qrcode`. Ctrl+C pour arrêter.
 La sauvegarde du téléphone est indépendante de celle du PC : il faudra recréer le code parent sur le téléphone.
 
+## En ligne
+Site : https://said4020.github.io/jeuxTDAH/ (GitHub Pages, branche `main`, racine). Il se met à jour 1 à 2 min après chaque push.
+Page de partage avec QR code : `qr.html` et image `qr.png`, régénérés par `python outils/qr-site.py [adresse]`.
+
 ## Pistes pour la suite
 - [ ] Mode daltonien (motifs en plus des couleurs)
 - [ ] Événements « distraction » à ignorer
